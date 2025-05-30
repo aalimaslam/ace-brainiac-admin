@@ -13,3 +13,4 @@ If you are developing a production application, we recommend using TypeScript an
 
 ## Deployment
 [![Netlify Status](https://api.netlify.com/api/v1/badges/b47e4214-a7d4-4cab-b199-d70a8d469d7a/deploy-status)](https://app.netlify.com/projects/ace-brainiac-fe/deploys)
+[Ace brainiac](https://ace-brainiac-fe.netlify.app)
