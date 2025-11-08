@@ -8,6 +8,7 @@ import InnerCard from "../../components/InnerCard";
 import useFetchMemberships from "../../hooks/useFetchMemberships";
 import useDeleteMembership from "../../hooks/useDeleteMembership";
 import { LoadingSpinner } from "../../components/Loader";
+import ViewMembership from "./veiw";
 
 export default function MembershipsPage() {
     const [page, setPage] = useState(1);
@@ -16,6 +17,8 @@ export default function MembershipsPage() {
     const [priceRange, setPriceRange] = useState("");
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [membershipToDelete, setMembershipToDelete] = useState(null);
+    const [showDetailsModal, setShowDetailsModal] = useState(false);
+    const [selectedMembership, setSelectedMembership] = useState(null);
 
     const navigate = useNavigate();
     
@@ -77,8 +80,14 @@ export default function MembershipsPage() {
         navigate("/memberships/create");
     };
 
-    const handleViewMembership = (membershipId) => {
-        navigate(`/memberships/${membershipId}`);
+    const handleViewMembership = (membership) => {
+        setSelectedMembership(membership);
+        setShowDetailsModal(true);
+    };
+
+    const handleCloseDetailsModal = () => {
+        setShowDetailsModal(false);
+        setSelectedMembership(null);
     };
 
     const handleDeleteClick = (membership) => {
@@ -93,7 +102,6 @@ export default function MembershipsPage() {
         if (result.success) {
             setShowDeleteConfirm(false);
             setMembershipToDelete(null);
-            
             refetch();
         }
     };
@@ -206,6 +214,13 @@ export default function MembershipsPage() {
 
                                         <div className="flex justify-center gap-2 mt-3">
                                             <Button
+                                                variant="primary"
+                                                className="mt-3 w-full text-xs bg-primary text-white"
+                                                onClick={() => handleViewMembership(membership)}
+                                            >
+                                                View
+                                            </Button>
+                                            <Button
                                                 variant="delete"
                                                 className="mt-3 w-full text-xs"
                                                 onClick={() => handleDeleteClick(membership)}
@@ -241,6 +256,16 @@ export default function MembershipsPage() {
                     </InnerCard>
                 </OuterCard>
             </div>
+
+            {/* View Membership Modal */}
+            <ViewMembership
+                membership={selectedMembership}
+                isOpen={showDetailsModal}
+                onClose={handleCloseDetailsModal}
+                onDelete={handleDeleteClick}
+                formatPrice={formatPrice}
+                formatDate={formatDate}
+            />
 
             {/* Delete Confirmation Modal */}
             {showDeleteConfirm && membershipToDelete && (

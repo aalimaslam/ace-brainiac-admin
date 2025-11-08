@@ -2,7 +2,7 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 // Base URL for all API calls
-const BASE_URL = "https://wbxi54kk3dwi5o5ns5wuik2aum0afxzl.lambda-url.us-east-1.on.aws/v1";
+const BASE_URL = "http://52.66.50.238:4031/v1";
 
 // Base API instance (No Authorization)
 const api = axios.create({
@@ -12,7 +12,7 @@ const api = axios.create({
     },
   });
 
-//  Authenticated API instance with token handling
+
 export const apiWithAuth = () => {
   const token = localStorage.getItem("adminAuthToken");
 

@@ -20,7 +20,7 @@ export default function AddClassModal({ isOpen, onClose, onAddSuccess }) {
       setIsSubmitting(true);
       setError(null);
       
-      // We'll use the hook we're about to create
+      
       const success = await onAddSuccess(className);
       
       if (success) {
