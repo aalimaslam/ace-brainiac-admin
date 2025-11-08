@@ -21,13 +21,15 @@ const useDashboardData = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (signal) => {
     setLoading(true);
     setError(null);
 
     try {
       const api = apiWithAuth();
-      const response = await api.get('/admin/admin/dashboard');
+      const response = await api.get('/admin/admin/dashboard', {
+        signal: signal
+      });
 
       if (response.data && response.data.data) {
         const transformedData = {
@@ -50,31 +52,42 @@ const useDashboardData = () => {
         return null;
       }
     } catch (err) {
-      console.error("Dashboard data fetch error:", err);
-      setError(err.response?.data?.message || "Failed to fetch dashboard data");
+      
+      if (err.name !== 'CanceledError' && err.name !== 'AbortError') {
+        console.error("Dashboard data fetch error:", err);
+        setError(err.response?.data?.message || "Failed to fetch dashboard data");
+      }
       return null;
     } finally {
-      setLoading(false);
+      // Only update loading if request wasn't aborted
+      if (signal && !signal.aborted) {
+        setLoading(false);
+      }
     }
   };
 
   useEffect(() => {
-    let isMounted = true;
+    const controller = new AbortController();
     
-    const fetchData = async () => {
-      if (isMounted) {
-        await fetchDashboardData();
-      }
-    };
+    fetchDashboardData(controller.signal);
     
-    fetchData();
-    
+    // Cleanup function to abort request on unmount
     return () => {
-      isMounted = false;
+      controller.abort();
     };
   }, []);
 
-  return { dashboardData, loading, error, refreshDashboardData: fetchDashboardData };
+  // Wrapper function for manual refresh without signal
+  const refreshDashboardData = async () => {
+    return await fetchDashboardData();
+  };
+
+  return { 
+    dashboardData, 
+    loading, 
+    error, 
+    refreshDashboardData 
+  };
 };
 
 export default useDashboardData;

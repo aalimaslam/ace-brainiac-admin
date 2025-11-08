@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { HiOutlineSupport } from "react-icons/hi";
 import {
     Menu,
@@ -16,8 +16,6 @@ import {
     Clipboard,
     BarChart2,
     User,
-    
-    
 } from "lucide-react";
 import { Outlet, useLocation, useNavigate } from "react-router-dom";
 import { logout } from "../../utils/logout";
@@ -25,11 +23,33 @@ import { logout } from "../../utils/logout";
 const Sidebar = () => {
     const [isOpen, setIsOpen] = useState(true);
     const location = useLocation();
-    const navigate = useNavigate(); 
+    const navigate = useNavigate();
     const [expandedGroups, setExpandedGroups] = useState({
         analytics: false,
         settings: false,
     });
+
+    // Close sidebar on mobile after route change
+    useEffect(() => {
+        if (window.innerWidth < 768) {
+            setIsOpen(false);
+        }
+    }, [location.pathname]);
+
+    // Set initial state based on screen size
+    useEffect(() => {
+        const handleResize = () => {
+            if (window.innerWidth >= 768) {
+                setIsOpen(true);
+            } else {
+                setIsOpen(false);
+            }
+        };
+
+        handleResize();
+        window.addEventListener("resize", handleResize);
+        return () => window.removeEventListener("resize", handleResize);
+    }, []);
 
     const iconMap = {
         home: Home,
@@ -95,7 +115,7 @@ const Sidebar = () => {
             label: "Performance",
             icon: "performance",
             path: "/performance",
-        }
+        },
     ];
 
     const bottomMenuLinks = [
@@ -104,20 +124,18 @@ const Sidebar = () => {
             label: "Support",
             icon: "support",
             path: "/support",
-
         },
         {
             id: "logout",
             label: "Logout",
             icon: "logout",
             path: "/logout",
-            action: handleLogout  // Add custom action for logout
-        }
+            action: handleLogout,
+        },
     ];
 
     // Logout handler function
     function handleLogout() {
-        // Clear authentication token from localStorage
         logout(navigate);
     }
 
@@ -183,7 +201,9 @@ const Sidebar = () => {
             return (
                 <button
                     key={link.id}
-                    onClick={() => link.action ? link.action() : navigate(link.path)}
+                    onClick={() =>
+                        link.action ? link.action() : navigate(link.path)
+                    }
                     className={`flex items-center w-full px-4 py-2 mb-1 rounded-md transition-colors ${
                         isActive
                             ? "bg-hover text-white"
@@ -202,19 +222,47 @@ const Sidebar = () => {
     };
 
     return (
-        <div className="flex h-screen">
-            {/* Sidebar */}
+        <div className="flex h-screen overflow-hidden">
+            {/* Mobile Header with Hamburger Button - Only visible on mobile when sidebar is closed */}
+            {!isOpen && (
+                <div className="fixed top-0 left-0 right-0 h-16 bg-primary text-white flex items-center px-4 z-40 md:hidden border-b border-gray-700">
+                    <button
+                        onClick={toggleSidebar}
+                        className="p-2 rounded-md hover:bg-hover transition-colors"
+                        aria-label="Open sidebar"
+                    >
+                        <Menu size={24} />
+                    </button>
+                    <h1 className="text-lg font-bold ml-4">Ace-brainiac Admin</h1>
+                </div>
+            )}
+
+            {/* Mobile Overlay - closes sidebar when clicked outside */}
+            {isOpen && (
+                <div
+                    className="fixed inset-0 bg-black bg-opacity-50 z-20 md:hidden"
+                    onClick={() => setIsOpen(false)}
+                    aria-hidden="true"
+                />
+            )}
+
+            {/* Sidebar - Always Fixed */}
             <div
-                className={`bg-primary text-white transition-all duration-300 flex flex-col ${
+                className={`bg-primary text-white transition-all duration-300 flex flex-col fixed left-0 top-0 h-full z-30 ${
                     isOpen ? "w-64" : "w-16"
-                } md:relative fixed h-full z-10`}
+                } ${isOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"}`}
             >
                 {/* Sidebar Header */}
                 <div className="flex items-center justify-between h-16 px-4 border-b border-gray-700">
-                    {isOpen && <h1 className="text-xl font-bold">Ace-brainiac Admin</h1>}
+                    {isOpen && (
+                        <h1 className="text-xl font-bold">
+                            Ace-brainiac Admin
+                        </h1>
+                    )}
                     <button
                         onClick={toggleSidebar}
-                        className="p-1 rounded-md hover:bg-hover"
+                        className="p-1 rounded-md hover:bg-hover transition-colors"
+                        aria-label={isOpen ? "Close sidebar" : "Open sidebar"}
                     >
                         {isOpen ? <X size={20} /> : <Menu size={20} />}
                     </button>
@@ -239,14 +287,18 @@ const Sidebar = () => {
                         </div>
                     ) : (
                         <div className="flex justify-center">
-                            <Users size={20} />
+                            <User size={20} />
                         </div>
                     )}
                 </div>
             </div>
 
             {/* Main Content */}
-            <div className="flex-grow">
+            <div
+                className={`flex-1 overflow-auto transition-all duration-300 ${
+                    isOpen ? "md:ml-64" : "md:ml-16"
+                } ${!isOpen ? "pt-16 md:pt-0" : ""}`}
+            >
                 <Outlet />
             </div>
         </div>

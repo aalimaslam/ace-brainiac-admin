@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { IoMdNotificationsOutline } from "react-icons/io";
 import { FiSettings, FiCheck } from "react-icons/fi";
 import { MdClose } from "react-icons/md";
-import useNotifications from "../hooks/useNotifications"; // Import the hook
+import useNotifications from "../hooks/useNotifications";
 
 const Header = () => {
     const navigate = useNavigate();
@@ -18,10 +18,10 @@ const Header = () => {
     // Use our custom notifications hook
     const { 
         notifications, 
-        unreadCount, 
+        unreadCount,
+        totalCount,
         loading, 
-        error, 
-        fetchNotifications, 
+        error,  
         markAsRead, 
         markAllAsRead 
     } = useNotifications();
@@ -175,13 +175,17 @@ const Header = () => {
                                 <div className="flex justify-center items-center h-24">
                                     <p className="text-gray-500">Loading...</p>
                                 </div>
+                            ) : error ? (
+                                <div className="flex justify-center items-center h-24">
+                                    <p className="text-red-500 text-xs px-3">{error}</p>
+                                </div>
                             ) : notifications.length === 0 ? (
                                 <div className="flex justify-center items-center h-24">
                                     <p className="text-gray-500">No notifications</p>
                                 </div>
                             ) : (
                                 <ul>
-                                    {notifications.map((notification) => (
+                                    {notifications.slice(0, 5).map((notification) => (
                                         <li 
                                             key={notification.id}
                                             onClick={() => handleNotificationClick(notification)}
@@ -209,7 +213,7 @@ const Header = () => {
                                 }}
                                 className="text-sm text-blue-600 hover:text-blue-800"
                             >
-                                View all notifications
+                                View all ({totalCount})
                             </button>
                         </div>
                     </div>

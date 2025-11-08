@@ -1,21 +1,26 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { apiWithAuth } from "../axios/Instance";
 
-const useNotifications = () => {
+const useNotifications = (limit = null) => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [totalCount, setTotalCount] = useState(0);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const effectRan = useRef(false);
 
-  // Fetch all notifications
-  const fetchNotifications = useCallback(async () => {
+  // Fetch notifications with optional limit
+  const fetchNotifications = useCallback(async (fetchLimit = limit) => {
     setLoading(true);
     setError(null);
     
     try {
       const api = apiWithAuth();
-      const response = await api.get("/persona/notifications");
+      // Add limit query parameter if backend supports it
+      const url = fetchLimit 
+        ? `/persona/notifications?limit=${fetchLimit}` 
+        : "/persona/notifications";
+      const response = await api.get(url);
       
       if (response.data && response.data.statusCode) {
         const { data } = response.data.statusCode;
@@ -36,7 +41,7 @@ const useNotifications = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [limit]);
 
   // Mark a specific notification as read
   const markAsRead = useCallback(async (notificationId) => {
@@ -44,7 +49,7 @@ const useNotifications = () => {
     
     try {
       const api = apiWithAuth();
-      const response = await api.put(`/persona/notifications/${notificationId}`);
+      const response = await api.patch(`/persona/notifications/${notificationId}`);
       
       if (response.data && response.data.statusCode && response.data.statusCode.status === 200) {
         // Update the local state
@@ -68,7 +73,7 @@ const useNotifications = () => {
   const markAllAsRead = useCallback(async () => {
     try {
       const api = apiWithAuth();
-      const response = await api.put("/persona/notifications");
+      const response = await api.patch("/persona/notifications");
       
       if (response.data && response.data.statusCode && response.data.statusCode.status === 200) {
         // Update all notifications to read in local state
@@ -86,9 +91,12 @@ const useNotifications = () => {
     }
   }, []);
 
-  // Initial fetch of notifications
+  // Initial fetch of notifications - runs only once
   useEffect(() => {
-    fetchNotifications();
+    if (effectRan.current === false) {
+      fetchNotifications();
+      effectRan.current = true;
+    }
   }, [fetchNotifications]);
 
   return { 

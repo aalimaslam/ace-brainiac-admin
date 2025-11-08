@@ -55,7 +55,7 @@ export const registerServiceWorker = async () => {
     if (!registration.active || registration.installing || registration.waiting) {
       await new Promise(resolve => {
         if (registration.active) {
-          // If already active, resolve immediately
+          
           resolve();
           return;
         }
@@ -69,7 +69,7 @@ export const registerServiceWorker = async () => {
             }
           });
           
-          // If it's already activated by the time we add the listener
+          
           if (worker.state === 'activated') {
             resolve();
           }
@@ -101,12 +101,12 @@ export const generateFCMToken = async () => {
       throw new Error("Service worker registration failed");
     }
     
-    // Make sure we have an active service worker before continuing
+    
     if (!swRegistration.active) {
       throw new Error("Service worker not active yet");
     }
     
-    // Get token with service worker registration
+    
     const tokenOptions = {
       vapidKey: VAPID_KEY,
       serviceWorkerRegistration: swRegistration
@@ -144,13 +144,13 @@ export const registerFCMTokenWithBackend = async (token) => {
   }
 };
 
-// Delete FCM token from Firebase and backend
+
 export const deleteFCMToken = async () => {
   try {
     const fcmToken = localStorage.getItem('fcmToken');
     if (!fcmToken) return true;
     
-    // Delete token from backend
+   
     const api = apiWithAuth();
     await api.delete("/persona/fcm", { 
       data: { fcmToken } 
@@ -159,11 +159,11 @@ export const deleteFCMToken = async () => {
     const messaging = getMessagingInstance();
     
     if (messaging) {
-      // Delete token from Firebase
+     
       await deleteToken(messaging);
     }
     
-    // Remove from localStorage
+    
     localStorage.removeItem('fcmToken');
     
     console.log("FCM token deleted successfully");

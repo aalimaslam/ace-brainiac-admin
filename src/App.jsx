@@ -26,6 +26,7 @@ import Dashboard from './pages/dashboard'
 import AdminSupportTicketsPage from './pages/support'
 import AdminPerformance from './pages/performance'
 import AdminStudentPerformance from './pages/performance/student'
+import NotificationsPage from './pages/Notification'
 
 // Protected Route component that checks for authentication
 const ProtectedRoute = ({ children }) => {
@@ -38,7 +39,7 @@ const ProtectedRoute = ({ children }) => {
       setIsAuthenticated(!!adminAuthToken)
       setIsLoading(false)
     }
-    
+
     checkAuth()
   }, [])
 
@@ -70,11 +71,11 @@ function App() {
         draggable
         pauseOnHover
       />
-      
+
       <Routes>
         {/* Auth pages should be outside the Layout and not protected */}
         <Route path='/login' element={<Login />} />
-        
+
         {/* Protected routes with Layout */}
         <Route path='/' element={
           <ProtectedRoute>
@@ -98,14 +99,14 @@ function App() {
             </Layout>
           </ProtectedRoute>
         } />
-         <Route path='/performance/:id' element={
+        <Route path='/performance/:id' element={
           <ProtectedRoute>
             <Layout>
               <AdminStudentPerformance />
             </Layout>
           </ProtectedRoute>
         } />
-        
+
         <Route path='/students' element={
           <ProtectedRoute>
             <Layout>
@@ -113,7 +114,7 @@ function App() {
             </Layout>
           </ProtectedRoute>
         } />
-        
+
         <Route path='/students/create' element={
           <ProtectedRoute>
             <Layout>
@@ -121,7 +122,14 @@ function App() {
             </Layout>
           </ProtectedRoute>
         } />
-        
+        <Route path='/notifications' element={
+          <ProtectedRoute>
+            <Layout>
+              <NotificationsPage />
+            </Layout>
+          </ProtectedRoute>
+        } />
+
         <Route path='/students/:id' element={
           <ProtectedRoute>
             <Layout>
@@ -136,7 +144,7 @@ function App() {
             </Layout>
           </ProtectedRoute>
         } />
-        
+
         <Route path='/classes' element={
           <ProtectedRoute>
             <Layout>
@@ -144,7 +152,7 @@ function App() {
             </Layout>
           </ProtectedRoute>
         } />
-        
+
         <Route path='/worksheets' element={
           <ProtectedRoute>
             <Layout>
@@ -152,7 +160,7 @@ function App() {
             </Layout>
           </ProtectedRoute>
         } />
-        
+
         <Route path='/worksheets/create' element={
           <ProtectedRoute>
             <Layout>
@@ -160,7 +168,7 @@ function App() {
             </Layout>
           </ProtectedRoute>
         } />
-        
+
         <Route path='/schools' element={
           <ProtectedRoute>
             <Layout>
@@ -168,7 +176,7 @@ function App() {
             </Layout>
           </ProtectedRoute>
         } />
-        
+
         <Route path='/schools/create' element={
           <ProtectedRoute>
             <Layout>
@@ -176,7 +184,7 @@ function App() {
             </Layout>
           </ProtectedRoute>
         } />
-        
+
         <Route path='/schools/edit/:id' element={
           <ProtectedRoute>
             <Layout>
@@ -184,15 +192,15 @@ function App() {
             </Layout>
           </ProtectedRoute>
         } />
-        
+
         <Route path='/schools/:id' element={
           <ProtectedRoute>
             <Layout>
-              <SchoolDetails/>
+              <SchoolDetails />
             </Layout>
           </ProtectedRoute>
         } />
-        
+
         <Route path='/tests' element={
           <ProtectedRoute>
             <Layout>
@@ -200,7 +208,7 @@ function App() {
             </Layout>
           </ProtectedRoute>
         } />
-        
+
         <Route path='/tests/create/:id' element={
           <ProtectedRoute>
             <Layout>
@@ -208,7 +216,7 @@ function App() {
             </Layout>
           </ProtectedRoute>
         } />
-        
+
         <Route path='/memberships' element={
           <ProtectedRoute>
             <Layout>
@@ -216,7 +224,7 @@ function App() {
             </Layout>
           </ProtectedRoute>
         } />
-        
+
         <Route path='/memberships/create' element={
           <ProtectedRoute>
             <Layout>
@@ -224,14 +232,14 @@ function App() {
             </Layout>
           </ProtectedRoute>
         } />
-          <Route path='/support' element={
+        <Route path='/support' element={
           <ProtectedRoute>
             <Layout>
               <AdminSupportTicketsPage />
             </Layout>
           </ProtectedRoute>
         } />
-        
+
         {/* Make sure the wildcard route comes last */}
         <Route path='*' element={<NotFound />} />
       </Routes>
