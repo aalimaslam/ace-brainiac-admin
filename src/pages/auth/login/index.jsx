@@ -96,12 +96,12 @@ export default function AdminPortal() {
         </div>
 
         <div className="text-center text-sm text-gray-600">
-          <p>
+          {/* <p>
             <span className="font-semibold">Need help accessing your account?</span>{" "}
             <Link to="/contact-support" className="text-green-900 font-semibold hover:underline">
               Contact IT support
             </Link>
-          </p>
+          </p> */}
         </div>
       </div>
     </div>
