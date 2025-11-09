@@ -11,7 +11,7 @@ export default function CreateMembership() {
     const [formData, setFormData] = useState({
         title: "",
         body: "",
-        membershipType: "student",
+        type: "student",
         price: "",
         duration: "",
         studentsLimit: "",
@@ -27,9 +27,9 @@ export default function CreateMembership() {
 
     const handleSubmit = async () => {
         try {
-            const type = formData.membershipType;
+            const type = formData.type;
             
-            const baseRequiredFields = ['title', 'body', 'price', 'duration', 'membershipType'];
+            const baseRequiredFields = ['title', 'body', 'price', 'duration', 'type'];
             const schoolRequiredFields = type === 'school' 
                 ? ['studentsLimit', 'testsLimit', 'worksheetsLimit', 'teachersLimit'] 
                 : [];
@@ -120,8 +120,8 @@ export default function CreateMembership() {
                                     { value: 'student', label: 'Student' },
                                     { value: 'school', label: 'School' }
                                 ]}
-                                value={formData.membershipType}
-                                onChange={(value) => handleInputChange('membershipType', value)}
+                                value={formData.type}
+                                onChange={(value) => handleInputChange('type', value)}
                                 className="w-full"
                                 disabled={loading}
                             />
@@ -148,7 +148,7 @@ export default function CreateMembership() {
                         />
                         
                         {/* School Plan Limits (conditionally rendered) */}
-                        {formData.membershipType === 'school' && (
+                        {formData.type === 'school' && (
                             <>
                                 <h3 className="text-md font-medium mt-6 mb-3">School Plan Limits</h3>
                                 
