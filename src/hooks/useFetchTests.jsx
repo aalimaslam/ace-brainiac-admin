@@ -19,7 +19,7 @@ const useFetchTests = () => {
     });
 
     const timeoutRef = useRef(null);
-    const initialFetchDoneRef = useRef(false);
+    const abortControllerRef = useRef(null);
 
     // Handle parameter changes
     const handleChangeParams = useCallback(({ param, newValue }) => {
@@ -55,15 +55,23 @@ const useFetchTests = () => {
     };
 
     const fetchTests = useCallback(async () => {
+        // Cancel previous request if it exists
+        if (abortControllerRef.current) {
+            abortControllerRef.current.abort();
+        }
+
+        // Create new abort controller for this request
+        abortControllerRef.current = new AbortController();
+
         setLoading(true);
         setError(null);
+        
         try {
             const api = apiWithAuth();
             
             // Create query parameters
             const queryParams = new URLSearchParams();
             
-            // Add all parameters
             queryParams.append('limit', params.limit);
             queryParams.append('page', params.page);
             
@@ -71,18 +79,17 @@ const useFetchTests = () => {
             if (params.status) queryParams.append('status', params.status);
             if (params.certification) queryParams.append('certification', params.certification);
             
-            
             if (params.createDate) {
                 const formattedDate = formatDateParameter(params.createDate);
                 if (formattedDate) queryParams.append('date', formattedDate);
             }
             
             console.log("Fetching tests with params:", params);
-            const response = await api.get(`/admin/test?${queryParams.toString()}`);
+            const response = await api.get(`/admin/test?${queryParams.toString()}`, {
+                signal: abortControllerRef.current.signal
+            });
             
-        
             if (response.data?.data?.tests && Array.isArray(response.data.data.tests)) {
-                
                 const testsData = response.data.data.tests.map(test => ({
                     id: test.id,
                     name: test.title || "Untitled Test",
@@ -98,16 +105,12 @@ const useFetchTests = () => {
                 
                 setTests(testsData);
                 
-               
-                if (response.data.data.pagination) {
-                    const { totalPages, totalItems, currentPage, itemsPerPage } = response.data.data.pagination;
-                    setTotalItems(totalItems);
-                    setTotalPages(totalPages);
-                } else {
-                    
-                    setTotalPages(Math.ceil(testsData.length / params.limit));
-                    setTotalItems(testsData.length);
-                }
+                // FIXED: Extract pagination from correct location
+                const { totalPages, currentPage, count } = response.data.data;
+                setTotalPages(totalPages || 1);
+                setTotalItems(count || 0);
+                
+                console.log("Pagination:", { totalPages, currentPage, count });
             } else {
                 console.warn("Unexpected API response structure:", response.data);
                 setTests([]);
@@ -115,6 +118,12 @@ const useFetchTests = () => {
                 setTotalItems(0);
             }
         } catch (err) {
+            // Don't set error if request was aborted
+            if (err.name === 'AbortError' || err.name === 'CanceledError') {
+                console.log("Request was cancelled");
+                return;
+            }
+            
             console.error("Error fetching tests:", err);
             setTests([]);
             setError(err.response?.data?.message || "Failed to fetch tests");
@@ -125,23 +134,15 @@ const useFetchTests = () => {
         }
     }, [params]);
 
-    // Initial fetch
+    // Effect to handle fetch with debounce for search
     useEffect(() => {
-        if (!initialFetchDoneRef.current) {
-            initialFetchDoneRef.current = true;
-            fetchTests();
+        // Clear existing timeout
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
         }
-    }, []);
-
-    
-    useEffect(() => {
-        if (!initialFetchDoneRef.current) return;
         
-        
+        // Debounce search queries
         if (params.query !== undefined && params.query !== null) {
-            if (timeoutRef.current) {
-                clearTimeout(timeoutRef.current);
-            }
             timeoutRef.current = setTimeout(() => {
                 fetchTests();
             }, 500);
@@ -149,9 +150,14 @@ const useFetchTests = () => {
             fetchTests();
         }
 
+        // Cleanup function
         return () => {
             if (timeoutRef.current) {
                 clearTimeout(timeoutRef.current);
+            }
+            // Abort ongoing request when component unmounts or params change
+            if (abortControllerRef.current) {
+                abortControllerRef.current.abort();
             }
         };
     }, [params, fetchTests]);
