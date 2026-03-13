@@ -2,7 +2,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 
 // Base URL for all API calls
-const BASE_URL = "https://api.acebrainiac.com/v1";
+const BASE_URL = "https://api.acebrainiac.in/v1";
+// const BASE_URL = "http://13.201.77.116:4031/v1";
 
 // Base API instance (No Authorization)
 const api = axios.create({
